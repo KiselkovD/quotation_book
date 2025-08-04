@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="ru">
+	<head>
+		<meta charset="UTF-8" />
+		<title>Топ 10 цитат</title>
+	</head>
+	<body>
+		<h1>Топ 10 самых популярных цитат</h1>
+		{% if top_quotes %}
+		<ol>
+			{% for quote in top_quotes %}
+			<li>
+				<blockquote>
+					<p>{{ quote.text }}</p>
+					<footer>— {{ quote.source }}</footer>
+				</blockquote>
+				<p>
+					Лайки: {{ quote.likes }} | Дизлайки: {{ quote.dislikes }} | Просмотры:
+					{{ quote.views }}
+				</p>
+			</li>
+			{% endfor %}
+		</ol>
+		{% else %}
+		<p>Цитаты пока не добавлены.</p>
+		{% endif %}
+	</body>
+</html>

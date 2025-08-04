@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="ru">
+	<head>
+		<meta charset="UTF-8" />
+		<title>Случайная цитата</title>
+	</head>
+	<body>
+		<h1>Случайная цитата</h1>
+		{% if quote %}
+		<blockquote>
+			<p>{{ quote.text }}</p>
+			<footer>— {{ quote.source }}</footer>
+		</blockquote>
+		<p>Лайки: {{ quote.likes }}</p>
+		<p>Дизлайки: {{ quote.dislikes }}</p>
+		<p>Просмотры: {{ quote.views }}</p>
+		{% else %}
+		<p>Цитаты пока не добавлены.</p>
+		{% endif %}
+	</body>
+</html>

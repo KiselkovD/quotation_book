@@ -3,6 +3,25 @@
 	<head>
 		<meta charset="UTF-8" />
 		<title>Случайная цитата</title>
+		<style>
+			.btn {
+				padding: 8px 16px;
+				cursor: pointer;
+				border: 1px solid #999;
+				border-radius: 4px;
+				background-color: #f0f0f0;
+				user-select: none;
+				margin-right: 10px;
+			}
+			.btn.active.like {
+				background-color: #4caf50;
+				color: white;
+			}
+			.btn.active.dislike {
+				background-color: #f44336;
+				color: white;
+			}
+		</style>
 	</head>
 	<body>
 		<h1>Случайная цитата</h1>
@@ -11,11 +30,82 @@
 			<p>{{ quote.text }}</p>
 			<footer>— {{ quote.source }}</footer>
 		</blockquote>
-		<p>Лайки: {{ quote.likes }}</p>
-		<p>Дизлайки: {{ quote.dislikes }}</p>
 		<p>Просмотры: {{ quote.views }}</p>
+
+		<div>
+			<button id="like-btn" class="btn" data-quote-id="{{ quote.id }}">
+				👍 Лайк (<span id="like-count">{{ likes }}</span>)
+			</button>
+			<button id="dislike-btn" class="btn" data-quote-id="{{ quote.id }}">
+				👎 Дизлайк (<span id="dislike-count">{{ dislikes }}</span>)
+			</button>
+		</div>
 		{% else %}
 		<p>Цитаты пока не добавлены.</p>
 		{% endif %}
+
+		<script>
+			const likeBtn = document.getElementById('like-btn')
+			const dislikeBtn = document.getElementById('dislike-btn')
+
+			function setActive(button, isActive, type) {
+				if (isActive) {
+					button.classList.add('active')
+					button.classList.add(type)
+				} else {
+					button.classList.remove('active')
+					button.classList.remove(type)
+				}
+			}
+
+			function updateButtons(userReaction) {
+				if (userReaction === 'like') {
+					setActive(likeBtn, true, 'like')
+					setActive(dislikeBtn, false, 'dislike')
+				} else if (userReaction === 'dislike') {
+					setActive(likeBtn, false, 'like')
+					setActive(dislikeBtn, true, 'dislike')
+				} else {
+					setActive(likeBtn, false, 'like')
+					setActive(dislikeBtn, false, 'dislike')
+				}
+			}
+
+			function sendReaction(quoteId, reaction) {
+				fetch(`/quotes/quote/${quoteId}/react/`, {
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/x-www-form-urlencoded',
+						'X-CSRFToken': '{{ csrf_token }}',
+					},
+					body: `reaction=${reaction}`,
+				})
+					.then(res => res.json())
+					.then(data => {
+						if (!data.error) {
+							document.getElementById('like-count').textContent = data.likes
+							document.getElementById('dislike-count').textContent =
+								data.dislikes
+							updateButtons(data.user_reaction)
+						} else {
+							console.error(data.error)
+						}
+					})
+					.catch(e => console.error(e))
+			}
+
+			likeBtn.addEventListener('click', () => {
+				const quoteId = likeBtn.getAttribute('data-quote-id')
+				sendReaction(quoteId, 'like')
+			})
+
+			dislikeBtn.addEventListener('click', () => {
+				const quoteId = dislikeBtn.getAttribute('data-quote-id')
+				sendReaction(quoteId, 'dislike')
+			})
+
+			// Инициализируем кнопки по текущей реакции при загрузке страницы
+			updateButtons('{{ user_reaction }}')
+		</script>
 	</body>
 </html>

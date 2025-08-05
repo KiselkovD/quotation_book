@@ -74,3 +74,12 @@ class Quote(models.Model):
         Возвращает человекочитаемое представление цитаты.
         """
         return f'"{self.text[:50]}..." из {self.source}'
+
+class QuoteReaction(models.Model):
+    quote = models.ForeignKey('Quote', on_delete=models.CASCADE, related_name='reactions')
+    user_identifier = models.CharField(max_length=100)  # UUID из cookie
+    reaction = models.CharField(max_length=7, choices=(('like', 'Like'), ('dislike', 'Dislike')))
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('quote', 'user_identifier')

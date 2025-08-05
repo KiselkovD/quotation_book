@@ -24,3 +24,6 @@ venv.bak/
 # PyCharm or VSCode configs
 .idea/
 .vscode/
+
+# Other
+*_pythonanywhere_com_wsgi.py

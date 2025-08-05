@@ -1,23 +1,22 @@
 from django.db import models
 from django.core.exceptions import ValidationError
 
+
 class Quote(models.Model):
     """
     Модель цитаты для хранения текста, источника и статистики.
 
     Атрибуты:
-        text (TextField): Текст цитаты. Уникально, чтобы исключить дубликаты.
-        source (CharField): Название источника (фильм, книга и т.п.).
-        weight (PositiveIntegerField): Вес цитаты, задаётся при добавлении. Чем выше, тем больше шанс выдачи.
-        likes (IntegerField): Количество лайков для цитаты.
-        dislikes (IntegerField): Количество дизлайков.
+        text (TextField): Уникальный текст цитаты для исключения дублей.
+        source (CharField): Название источника цитаты (фильм, книга и т.п.).
+        weight (PositiveIntegerField): Вес цитаты для вероятностного выбора (чем выше — тем выше шанс выдачи).
         views (IntegerField): Счётчик просмотров цитаты.
-        created_at (DateTimeField): Дата и время создания записи.
-        updated_at (DateTimeField): Дата и время последнего обновления записи.
+        created_at (DateTimeField): Дата и время создания цитаты.
+        updated_at (DateTimeField): Дата и время последнего обновления цитаты.
 
     Ограничения:
-        - Уникальность по тексту цитаты.
-        - Не допускается более 3 цитат на один источник.
+        - Уникальность текста цитаты.
+        - Максимум 3 цитаты на один источник.
     """
     text = models.TextField(
         unique=True,
@@ -30,14 +29,6 @@ class Quote(models.Model):
     weight = models.PositiveIntegerField(
         default=1,
         help_text="Вес цитаты для вероятностной выдачи (чем больше — тем выше шанс)."
-    )
-    likes = models.IntegerField(
-        default=0,
-        help_text="Количество лайков."
-    )
-    dislikes = models.IntegerField(
-        default=0,
-        help_text="Количество дизлайков."
     )
     views = models.IntegerField(
         default=0,
@@ -61,9 +52,8 @@ class Quote(models.Model):
 
     def clean(self):
         """
-        Проверяет бизнес-правила перед сохранением.
-
-        Выбрасывает ValidationError, если у данного источника уже есть 3 и более цитат.
+        Проверка бизнес-правил перед сохранением:
+        Выбрасывает ValidationError, если у источника уже 3 и более цитат.
         """
         existing_quotes_count = Quote.objects.filter(source=self.source).exclude(pk=self.pk).count()
         if existing_quotes_count >= 3:
@@ -71,11 +61,24 @@ class Quote(models.Model):
 
     def __str__(self):
         """
-        Возвращает человекочитаемое представление цитаты.
+        Человекочитаемое представление цитаты: сокращённый текст и источник.
         """
         return f'"{self.text[:50]}..." из {self.source}'
 
+
 class QuoteReaction(models.Model):
+    """
+    Модель реакции пользователя на цитату.
+
+    Атрибуты:
+        quote (ForeignKey): Связь с цитатой.
+        user_identifier (CharField): Уникальный идентификатор пользователя (UUID из cookie).
+        reaction (CharField): Тип реакции — "like" или "dislike".
+        created_at (DateTimeField): Дата и время создания реакции.
+
+    Ограничения:
+        - Для одной цитаты и одного пользователя может быть только одна реакция.
+    """
     quote = models.ForeignKey('Quote', on_delete=models.CASCADE, related_name='reactions')
     user_identifier = models.CharField(max_length=100)  # UUID из cookie
     reaction = models.CharField(max_length=7, choices=(('like', 'Like'), ('dislike', 'Dislike')))
@@ -83,3 +86,4 @@ class QuoteReaction(models.Model):
 
     class Meta:
         unique_together = ('quote', 'user_identifier')
+

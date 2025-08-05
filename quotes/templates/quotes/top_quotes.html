@@ -16,17 +16,13 @@
 
     <ol>
     {% for quote in top_quotes %}
-        <li>
-            <blockquote>
-                <p>{{ quote.text }}</p>
-                <footer>— {{ quote.source }}</footer>
-            </blockquote>
-            <p>Лайки: {{ quote.likes }} | Дизлайки: {{ quote.dislikes }} | Просмотры: {{ quote.views }}</p>
-            <p>Добавлена: {{ quote.created_at|date:"d.m.Y H:i" }}</p>
-        </li>
-    {% empty %}
-        <p>Цитаты не найдены.</p>
-    {% endfor %}
+    <blockquote>
+        <p>{{ quote.text }}</p>
+        <footer>— {{ quote.source }}</footer>
+    </blockquote>
+    <p>Лайки: {{ quote.likes_count }} | Дизлайки: {{ quote.dislikes_count }} | Просмотры: {{ quote.views }}</p>
+    <p>Добавлена: {{ quote.created_at|date:"d.m.Y H:i" }}</p>
+		{% endfor %}
     </ol>
 </body>
 </html>

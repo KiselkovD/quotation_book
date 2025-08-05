@@ -5,16 +5,15 @@ from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 import uuid
 
+
 def random_quote_view(request):
     quote = get_random_quote_weighted()
     if quote:
         quote.views += 1
         quote.save(update_fields=['views'])
 
-        # Получаем user_id из cookie или None
         user_id = request.COOKIES.get('user_id')
 
-        # Получаем текущую реакцию, если есть
         user_reaction_obj = None
         if user_id:
             user_reaction_obj = QuoteReaction.objects.filter(quote=quote, user_identifier=user_id).first()
@@ -31,21 +30,33 @@ def random_quote_view(request):
 
     response = render(request, 'quotes/random_quote.html', context)
 
-    # При отсутствии user_id в cookie создаём новый
     if not request.COOKIES.get('user_id'):
         response.set_cookie('user_id', str(uuid.uuid4()), max_age=365*24*60*60)
 
     return response
 
-@require_POST
-
 def top_quotes_view(request):
     """
-    Отображает 10 самых популярных цитат, отсортированных по количеству лайков.
+    Отображает 10 цитат с сортировкой по новизне, лайкам или просмотрам.
+    Параметр сортировки приходит в GET 'sort'.
     """
-    top_quotes = Quote.objects.order_by('-likes')[:10]
-    return render(request, 'quotes/top_quotes.html', {'top_quotes': top_quotes})
+    sort = request.GET.get('sort', 'likes')
 
+    if sort == 'new':
+        quotes = Quote.objects.order_by('-created_at')[:10]
+    elif sort == 'views':
+        quotes = Quote.objects.order_by('-views')[:10]
+    else:
+        quotes = Quote.objects.order_by('-likes')[:10]
+
+    context = {
+        'top_quotes': quotes,
+        'current_sort': sort,
+    }
+    return render(request, 'quotes/top_quotes.html', context)
+
+
+@require_POST
 def react_quote(request, quote_id):
     user_id = request.COOKIES.get('user_id')
     if not user_id:

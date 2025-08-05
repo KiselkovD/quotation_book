@@ -1,28 +1,32 @@
 <!DOCTYPE html>
 <html lang="ru">
-	<head>
-		<meta charset="UTF-8" />
-		<title>Топ 10 цитат</title>
-	</head>
-	<body>
-		<h1>Топ 10 самых популярных цитат</h1>
-		{% if top_quotes %}
-		<ol>
-			{% for quote in top_quotes %}
-			<li>
-				<blockquote>
-					<p>{{ quote.text }}</p>
-					<footer>— {{ quote.source }}</footer>
-				</blockquote>
-				<p>
-					Лайки: {{ quote.likes }} | Дизлайки: {{ quote.dislikes }} | Просмотры:
-					{{ quote.views }}
-				</p>
-			</li>
-			{% endfor %}
-		</ol>
-		{% else %}
-		<p>Цитаты пока не добавлены.</p>
-		{% endif %}
-	</body>
+<head>
+    <meta charset="UTF-8" />
+    <title>Топ 10 цитат</title>
+</head>
+<body>
+    <h1>Топ 10 цитат</h1>
+
+    <p>
+        Сортировать по:
+        <a href="?sort=new" {% if current_sort == 'new' %}style="font-weight:bold;"{% endif %}>Новизне</a> |
+        <a href="?sort=likes" {% if current_sort == 'likes' %}style="font-weight:bold;"{% endif %}>Лайкам</a> |
+        <a href="?sort=views" {% if current_sort == 'views' %}style="font-weight:bold;"{% endif %}>Просмотрам</a>
+    </p>
+
+    <ol>
+    {% for quote in top_quotes %}
+        <li>
+            <blockquote>
+                <p>{{ quote.text }}</p>
+                <footer>— {{ quote.source }}</footer>
+            </blockquote>
+            <p>Лайки: {{ quote.likes }} | Дизлайки: {{ quote.dislikes }} | Просмотры: {{ quote.views }}</p>
+            <p>Добавлена: {{ quote.created_at|date:"d.m.Y H:i" }}</p>
+        </li>
+    {% empty %}
+        <p>Цитаты не найдены.</p>
+    {% endfor %}
+    </ol>
+</body>
 </html>
